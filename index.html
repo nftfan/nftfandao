@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT FAN Dashboard</title>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1002.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 8px;
+            background-color: #000000;
+            color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header input,
+        .header select,
+        .header button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #3a3a3a;
+            color: #f5f5f5;
+            flex: 1;
+            font-size: 10px;
+        }
+
+        .header button {
+            background-color: #28a745;
+            cursor: pointer;
+            flex: none;
+            font-size: 10px;
+        }
+
+        .header button:hover {
+            background-color: #218838;
+        }
+
+        .note-container {
+            margin-top: 20px;
+        }
+
+        .tab {
+            display: none;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background-color: #3a3a3a;
+        }
+
+        .tab h2 {
+            margin: 0;
+            padding: 0;
+            margin-bottom: 10px;
+            color: #ffffff;
+            font-size: 12px;
+        }
+
+        .tab p {
+            margin: 0;
+            padding: 0;
+            color: #dddddd;
+            font-size: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #2081e2;
+            cursor: pointer;
+            font-size: 10px;
+            color: #ffffff;
+        }
+
+        .tab-button.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border: 1px solid #444;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        th {
+            background-color: #3a3a3a;
+            color: #f5f5f5;
+        }
+
+        td {
+            background-color: #2e2e2e;
+        }
+
+        .days-remaining {
+            color: #28a745;
+        }
+
+        .days-past {
+            color: #dc3545;
+        }
+
+        img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .expand-collapse {
+            cursor: pointer;
+            color: #007bff;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #3a3a3a;
+            color: #f5f5f5;
+            flex: 1;
+            font-size: 10px;
+        }
+
+        .search-container button {
+            background-color: #007bff;
+            cursor: pointer;
+            flex: none;
+            font-size: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            color: #ffffff;
+        }
+
+        .search-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+	 <h1>NFT FANS DAO</h1>
+        <div class="header">
+            <input type="text" id="noteText" placeholder="Enter your note">
+            <select id="emojiSelect">
+                <option value="😀">😀 Give Opinion</option>
+<option value="🚀">🚀 Launch News</option>
+<option value="🍔">🍔 Airdrop</option>
+<option value="🎨">🎨 NFT Talk</option>
+<option value="🏀">🏀 General Talk</option>
+<option value="✈️">✈️ Other Projects</option>
+<option value="🌈">🌈 Rainbow News</option>
+<option value="🔷">🔷 Drop Polygon</option>
+<option value="👛">👛 Wallet Post</option>
+<option value="🆔">🆔 Fan ID</option>
+<option value="❓">❓ Ask Question</option>
+<option value="📈">📈 Market Trends</option>
+<option value="🔐">🔐 Security Tips</option>
+<option value="📂">📂 New Coin Release</option>
+<option value="📊">📊 Analytics</option>
+<option value="📜">📜 Smart Contracts</option>
+<option value="🤝">🤝 Partnerships</option>
+<option value="💬">💬 Community Talk</option>
+<option value="📣">📣 Announcements</option>
+<option value="💡">💡 Ideas & Innovation</option>
+            </select>
+            <input type="date" id="noteDate">
+            <input type="url" id="imageUrl" placeholder="Add URL (optional)">
+            <button onclick="addNote()">Post</button>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchText" placeholder="Search notes">
+            <button onclick="searchNotes()">Search</button>
+        </div>
+        <div class="tab-buttons" id="tabButtons"></div>
+        <div class="note-container" id="noteContainer"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Note</th>
+                    <th>Emoji</th>
+                    <th>Date</th>
+                    <th>Days</th>
+                    <th>Image</th>
+                </tr>
+            </thead>
+            <tbody id="allNotesTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        AWS.config.update({
+            region: 'eu-north-1',
+            credentials: new AWS.Credentials('AKIAVRUVVVUMUTVBFLWP', 'llyVopZkA+XOnmjPUGs9tG4ihdfmDVdsgAxYMjaF')
+        });
+
+        var dynamodb = new AWS.DynamoDB.DocumentClient();
+        var tableName = 'lf03';
+        const notes = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchNotes();
+        });
+
+        function addNote() {
+            const noteText = document.getElementById('noteText').value;
+            const emoji = document.getElementById('emojiSelect').value;
+            const date = document.getElementById('noteDate').value;
+            const imageUrl = document.getElementById('imageUrl').value;
+
+            if (!noteText || !date) {
+                alert('Please enter a note and select a date.');
+                return;
+            }
+
+            const note = { id: Date.now().toString(), text: noteText, emoji, date, imageUrl };
+
+            saveNoteToDynamoDB(note);
+            notes.push(note);
+            displayNotes();
+            displayAllNotes();
+            resetForm();
+        }
+
+        function saveNoteToDynamoDB(note) {
+            var params = {
+                TableName: tableName,
+                Item: {
+                    lf03: note.id, // Use 'lf03' as the primary key attribute
+                    text: note.text,
+                    emoji: note.emoji,
+                    date: note.date,
+                    imageUrl: note.imageUrl
+                }
+            };
+
+            dynamodb.put(params, function (err, data) {
+                if (err) {
+                    alert("Error saving note to DynamoDB: " + err.message);
+                } else {
+                    console.log("Note saved successfully.");
+                }
+            });
+        }
+
+        function fetchNotes() {
+            var params = {
+                TableName: tableName
+            };
+
+            dynamodb.scan(params, function (err, data) {
+                if (err) {
+                    console.error('Error fetching notes:', err);
+                } else {
+                    notes.push(...data.Items);
+                    displayNotes();
+                    displayAllNotes();
+                }
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('noteText').value = '';
+            document.getElementById('noteDate').value = '';
+            document.getElementById('imageUrl').value = '';
+        }
+
+        function displayNotes(selectedEmoji = null) {
+            const noteContainer = document.getElementById('noteContainer');
+            noteContainer.innerHTML = '';
+
+            let filteredNotes;
+            if (selectedEmoji === 'Upcoming Events') {
+                filteredNotes = notes.filter(note => new Date(note.date) > new Date());
+            } else if (selectedEmoji === 'Past Events') {
+                filteredNotes = notes.filter(note => new Date(note.date) <= new Date());
+            } else {
+                filteredNotes = selectedEmoji ? notes.filter(note => note.emoji === selectedEmoji) : notes;
+            }
+
+            const groupedNotes = filteredNotes.reduce((acc, note) => {
+                if (!acc[note.emoji]) acc[note.emoji] = [];
+                acc[note.emoji].push(note);
+                return acc;
+            }, {});
+
+            for (const [emoji, noteList] of Object.entries(groupedNotes)) {
+                const tab = document.createElement('div');
+                tab.className = 'tab';
+                if (emoji === selectedEmoji) {
+                    tab.style.display = 'block';
+                }
+
+                const tabTitle = document.createElement('h2');
+                tabTitle.textContent = `${emoji} Notes (${noteList.length})`;
+                tab.appendChild(tabTitle);
+
+                noteList.forEach(note => {
+                    const noteElement = document.createElement('p');
+                    noteElement.textContent = `${note.text} (${formatDays(note.date)})`;
+                    tab.appendChild(noteElement);
+                });
+
+                noteContainer.appendChild(tab);
+            }
+
+            createTabButtons(groupedNotes);
+        }
+
+        function createTabButtons(groupedNotes) {
+            const tabButtons = document.getElementById('tabButtons');
+            tabButtons.innerHTML = '';
+
+            const upcomingEventsButton = document.createElement('button');
+            upcomingEventsButton.textContent = 'Upcoming Events';
+            upcomingEventsButton.className = 'tab-button';
+            upcomingEventsButton.onclick = () => displayNotes('Upcoming Events');
+            tabButtons.appendChild(upcomingEventsButton);
+
+            const pastEventsButton = document.createElement('button');
+            pastEventsButton.textContent = 'Past Events';
+            pastEventsButton.className = 'tab-button';
+            pastEventsButton.onclick = () => displayNotes('Past Events');
+            tabButtons.appendChild(pastEventsButton);
+
+            for (const emoji of Object.keys(groupedNotes)) {
+                const button = document.createElement('button');
+                button.textContent = `${emoji} (${groupedNotes[emoji].length})`;
+                button.className = 'tab-button';
+                button.onclick = () => displayNotes(emoji);
+                tabButtons.appendChild(button);
+            }
+        }
+
+        function displayAllNotes() {
+            const tableBody = document.getElementById('allNotesTableBody');
+            tableBody.innerHTML = '';
+
+            // Sort the notes in descending order by date
+            notes.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const groupedNotes = notes.reduce((acc, note) => {
+                const yearMonth = note.date.slice(0, 7); // Get "YYYY-MM"
+                if (!acc[yearMonth]) acc[yearMonth] = [];
+                acc[yearMonth].push(note);
+                return acc;
+            }, {});
+
+            for (const [yearMonth, noteList] of Object.entries(groupedNotes)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" class="expand-collapse" onclick="toggleVisibility('${yearMonth}')">${yearMonth}</td>
+                `;
+                tableBody.appendChild(row);
+
+                noteList.forEach(note => {
+                    const noteRow = document.createElement('tr');
+                    noteRow.className = yearMonth;
+                    noteRow.style.display = 'none';
+                    noteRow.innerHTML = `
+                        <td>${note.text}</td>
+                        <td>${note.emoji}</td>
+                        <td>${note.date}</td>
+                        <td class="${formatDaysClass(note.date)}">${formatDays(note.date)}</td>
+                        <td>${note.imageUrl ? `<a href="${note.imageUrl}" target="_blank"><img src="${note.imageUrl}" alt="Image"></a>` : ''}</td>
+                    `;
+                    tableBody.appendChild(noteRow);
+                });
+            }
+        }
+
+        function toggleVisibility(yearMonth) {
+            const rows = document.getElementsByClassName(yearMonth);
+            for (const row of rows) {
+                row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+            }
+        }
+
+        function formatDays(dateString) {
+            const now = new Date();
+            const noteDate = new Date(dateString);
+            const diffTime = noteDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const years = Math.floor(Math.abs(diffDays) / 365);
+            const months = Math.floor((Math.abs(diffDays) % 365) / 30);
+            const days = Math.abs(diffDays) % 30;
+
+            let formattedString = '';
+            if (years > 0) formattedString += `${years} years `;
+            if (months > 0) formattedString += `${months} months `;
+            formattedString += `${days} days`;
+
+            if (diffDays > 0) {
+                return `${formattedString} remaining`;
+            } else {
+                return `${formattedString} past`;
+            }
+        }
+
+        function formatDaysClass(dateString) {
+            const now = new Date();
+            const noteDate = new Date(dateString);
+            const diffTime = noteDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            return diffDays > 0 ? 'days-remaining' : 'days-past';
+        }
+
+        function searchNotes() {
+            const searchText = document.getElementById('searchText').value.toLowerCase();
+            const filteredNotes = notes.filter(note => note.text.toLowerCase().includes(searchText));
+            displayFilteredNotes(filteredNotes);
+        }
+
+        function displayFilteredNotes(filteredNotes) {
+            const noteContainer = document.getElementById('noteContainer');
+            noteContainer.innerHTML = '';
+
+            const groupedNotes = filteredNotes.reduce((acc, note) => {
+                if (!acc[note.emoji]) acc[note.emoji] = [];
+                acc[note.emoji].push(note);
+                return acc;
+            }, {});
+
+            for (const [emoji, noteList] of Object.entries(groupedNotes)) {
+                const tab = document.createElement('div');
+                tab.className = 'tab';
+                tab.style.display = 'block';
+
+                const tabTitle = document.createElement('h2');
+                tabTitle.textContent = `${emoji} Notes (${noteList.length})`;
+                tab.appendChild(tabTitle);
+
+                noteList.forEach(note => {
+                    const noteElement = document.createElement('p');
+                    noteElement.textContent = `${note.text} (${formatDays(note.date)})`;
+                    tab.appendChild(noteElement);
+                });
+
+                noteContainer.appendChild(tab);
+            }
+        }
+
+        setInterval(() => {
+            displayNotes(document.querySelector('.tab-button.active')?.textContent.split(' ')[0]);
+            displayAllNotes();
+        }, 86400000); // Update every 24 hours
+    </script>
+</body>
+
+</html>
