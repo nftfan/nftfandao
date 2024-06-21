@@ -183,35 +183,82 @@
         .search-container button:hover {
             background-color: #0056b3;
         }
+
+        .read-more {
+            color: #007bff;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #2a2a2a;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            font-family: 'Georgia', serif;
+            font-size: 14px;
+            color: #ffffff;
+            word-wrap: break-word;
+        }
+
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-	 <h1>NFT FANS DAO</h1>
+        <h1>NFT FANS DAO</h1>
         <div class="header">
             <input type="text" id="noteText" placeholder="Enter your note">
             <select id="emojiSelect">
                 <option value="😀">😀 Give Opinion</option>
-<option value="🚀">🚀 Launch News</option>
-<option value="🍔">🍔 Airdrop</option>
-<option value="🎨">🎨 NFT Talk</option>
-<option value="🏀">🏀 General Talk</option>
-<option value="✈️">✈️ Other Projects</option>
-<option value="🌈">🌈 Rainbow News</option>
-<option value="🔷">🔷 Drop Polygon</option>
-<option value="👛">👛 Wallet Post</option>
-<option value="🆔">🆔 Fan ID</option>
-<option value="❓">❓ Ask Question</option>
-<option value="📈">📈 Market Trends</option>
-<option value="🔐">🔐 Security Tips</option>
-<option value="📂">📂 New Coin Release</option>
-<option value="📊">📊 Analytics</option>
-<option value="📜">📜 Smart Contracts</option>
-<option value="🤝">🤝 Partnerships</option>
-<option value="💬">💬 Community Talk</option>
-<option value="📣">📣 Announcements</option>
-<option value="💡">💡 Ideas & Innovation</option>
+                <option value="🚀">🚀 Launch News</option>
+                <option value="🍔">🍔 Airdrop</option>
+                <option value="🎨">🎨 NFT Talk</option>
+                <option value="🏀">🏀 General Talk</option>
+                <option value="✈️">✈️ Other Projects</option>
+                <option value="🌈">🌈 Rainbow News</option>
+                <option value="🔷">🔷 Drop Polygon</option>
+                <option value="👛">👛 Wallet Post</option>
+                <option value="🆔">🆔 Fan ID</option>
+                <option value="❓">❓ Ask Question</option>
+                <option value="📈">📈 Market Trends</option>
+                <option value="🔐">🔐 Security Tips</option>
+                <option value="📂">📂 New Coin Release</option>
+                <option value="📊">📊 Analytics</option>
+                <option value="📜">📜 Smart Contracts</option>
+                <option value="🤝">🤝 Partnerships</option>
+                <option value="💬">💬 Community Talk</option>
+                <option value="📣">📣 Announcements</option>
+                <option value="💡">💡 Ideas & Innovation</option>
             </select>
             <input type="date" id="noteDate">
             <input type="url" id="imageUrl" placeholder="Add URL (optional)">
@@ -235,6 +282,14 @@
             </thead>
             <tbody id="allNotesTableBody"></tbody>
         </table>
+    </div>
+
+    <!-- Modal for Read More -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p id="modalText"></p>
+        </div>
     </div>
 
     <script>
@@ -346,7 +401,7 @@
 
                 noteList.forEach(note => {
                     const noteElement = document.createElement('p');
-                    noteElement.textContent = `${note.text} (${formatDays(note.date)})`;
+                    noteElement.innerHTML = `${truncateText(note.text)} <span class="read-more" onclick="openModal('${note.text.replace(/'/g, "\\'")}')">Read More</span> (${formatDays(note.date)})`;
                     tab.appendChild(noteElement);
                 });
 
@@ -354,6 +409,14 @@
             }
 
             createTabButtons(groupedNotes);
+        }
+
+        function truncateText(text, maxLength = 50) {
+            if (text.length > maxLength) {
+                return text.slice(0, maxLength) + '...';
+            } else {
+                return text;
+            }
         }
 
         function createTabButtons(groupedNotes) {
@@ -407,7 +470,7 @@
                     noteRow.className = yearMonth;
                     noteRow.style.display = 'none';
                     noteRow.innerHTML = `
-                        <td>${note.text}</td>
+                        <td>${truncateText(note.text)} <span class="read-more" onclick="openModal('${note.text.replace(/'/g, "\\'")}')">Read More</span></td>
                         <td>${note.emoji}</td>
                         <td>${note.date}</td>
                         <td class="${formatDaysClass(note.date)}">${formatDays(note.date)}</td>
@@ -483,11 +546,26 @@
 
                 noteList.forEach(note => {
                     const noteElement = document.createElement('p');
-                    noteElement.textContent = `${note.text} (${formatDays(note.date)})`;
+                    noteElement.innerHTML = `${truncateText(note.text)} <span class="read-more" onclick="openModal('${note.text.replace(/'/g, "\\'")}')">Read More</span> (${formatDays(note.date)})`;
                     tab.appendChild(noteElement);
                 });
 
                 noteContainer.appendChild(tab);
+            }
+        }
+
+        function openModal(text) {
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('myModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('myModal')) {
+                closeModal();
             }
         }
 
